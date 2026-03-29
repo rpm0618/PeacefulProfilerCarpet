@@ -1,0 +1,15 @@
+--- ../src-base/minecraft/net/minecraft/util/math/ChunkPos.java
++++ ../src-work/minecraft/net/minecraft/util/math/ChunkPos.java
+@@ -24,6 +24,12 @@
+         return (long)p_77272_0_ & 4294967295L | ((long)p_77272_1_ & 4294967295L) << 32;
+     }
+ 
++    // rpm0618
++    public static ChunkPos fromLong(long k) {
++        return new ChunkPos((int)(k & 4294967295L), (int)(k >> 32 & 4294967295L));
++    }
++    // end rpm0618
++
+     public int hashCode()
+     {
+         int i = 1664525 * this.field_77276_a + 1013904223;

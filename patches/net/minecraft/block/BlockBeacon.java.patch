@@ -1,15 +1,22 @@
 --- ../src-base/minecraft/net/minecraft/block/BlockBeacon.java
 +++ ../src-work/minecraft/net/minecraft/block/BlockBeacon.java
-@@ -20,6 +20,8 @@
+@@ -20,8 +20,15 @@
  import net.minecraft.world.WorldServer;
  import net.minecraft.world.chunk.Chunk;
  
 +import carpet.CarpetSettings;
++import net.minecraft.world.gen.ChunkProviderServer;
++
++import java.util.concurrent.atomic.AtomicInteger;
 +
  public class BlockBeacon extends BlockContainer
  {
++    public static AtomicInteger GET_BLOCK_COUNT = new AtomicInteger(0);
++
      public BlockBeacon()
-@@ -93,37 +95,37 @@
+     {
+         super(Material.field_151592_s, MapColor.field_151648_G);
+@@ -93,44 +100,76 @@
              ((TileEntityBeacon)tileentity).func_174908_m();
              p_189540_2_.func_175641_c(p_189540_3_, this, 1, 0);
          }
@@ -34,37 +41,81 @@
 -        {
 -            public void run()
 -            {
+-                Chunk chunk = p_176450_0_.func_175726_f(p_176450_1_);
 +        HttpUtil.field_180193_a.submit(new Runnable() {
 +            public void run() {
-                 Chunk chunk = p_176450_0_.func_175726_f(p_176450_1_);
--
++                try { // rpm0618
++                    Chunk chunk = p_176450_0_.func_175726_f(p_176450_1_);
+ 
 -                for (int i = p_176450_1_.func_177956_o() - 1; i >= 0; --i)
 -                {
-+                for (int i = p_176450_1_.func_177956_o() - 1; i >= 0; --i) {
-                     final BlockPos blockpos = new BlockPos(p_176450_1_.func_177958_n(), i, p_176450_1_.func_177952_p());
--
+-                    final BlockPos blockpos = new BlockPos(p_176450_1_.func_177958_n(), i, p_176450_1_.func_177952_p());
++                    // rpm0618
++                    ChunkProviderServer provider = (ChunkProviderServer) p_176450_0_.func_72863_F();
++                    boolean rehashed = false;
++                    int pre = provider.field_73244_f.size();
++                    // end rpm0618
+ 
 -                    if (!chunk.func_177444_d(blockpos))
 -                    {
-+                    if (!chunk.func_177444_d(blockpos)) {
-                         break;
-                     }
--
-                     IBlockState iblockstate = p_176450_0_.func_180495_p(blockpos);
--
+-                        break;
+-                    }
++                    for (int i = p_176450_1_.func_177956_o() - 1; i >= 0; --i) {
++                        final BlockPos blockpos = new BlockPos(p_176450_1_.func_177958_n(), i, p_176450_1_.func_177952_p());
++                        if (!chunk.func_177444_d(blockpos)) {
++                            break;
++                        }
+ 
+-                    IBlockState iblockstate = p_176450_0_.func_180495_p(blockpos);
++                        int preGet = provider.field_73244_f.size(); // rpm0618
+ 
 -                    if (iblockstate.func_177230_c() == Blocks.field_150461_bJ)
 -                    {
 -                        ((WorldServer)p_176450_0_).func_152344_a(new Runnable()
 -                        {
 -                            public void run()
 -                            {
-+                    if (iblockstate.func_177230_c() == Blocks.field_150461_bJ) {
-+                        ((WorldServer)p_176450_0_).func_152344_a(new Runnable() {
-+                            public void run() {
-                                 TileEntity tileentity = p_176450_0_.func_175625_s(blockpos);
--
+-                                TileEntity tileentity = p_176450_0_.func_175625_s(blockpos);
++                        IBlockState iblockstate = p_176450_0_.func_180495_p(blockpos);
+ 
 -                                if (tileentity instanceof TileEntityBeacon)
 -                                {
-+                                if (tileentity instanceof TileEntityBeacon) {
-                                     ((TileEntityBeacon)tileentity).func_174908_m();
-                                     p_176450_0_.func_175641_c(blockpos, Blocks.field_150461_bJ, 1, 0);
+-                                    ((TileEntityBeacon)tileentity).func_174908_m();
+-                                    p_176450_0_.func_175641_c(blockpos, Blocks.field_150461_bJ, 1, 0);
++                        // rpm0618
++                        int postGet = provider.field_73244_f.size();
++                        if (postGet > preGet) {
++                            rehashed = true;
++                        }
++
++                        BlockBeacon.GET_BLOCK_COUNT.incrementAndGet();
++                        // end rpm0618
++
++                        if (iblockstate.func_177230_c() == Blocks.field_150461_bJ) {
++                            ((WorldServer) p_176450_0_).func_152344_a(new Runnable() {
++                                public void run() {
++                                    TileEntity tileentity = p_176450_0_.func_175625_s(blockpos);
++                                    if (tileentity instanceof TileEntityBeacon) {
++                                        ((TileEntityBeacon) tileentity).func_174908_m();
++                                        p_176450_0_.func_175641_c(blockpos, Blocks.field_150461_bJ, 1, 0);
++                                    }
                                  }
+-                            }
+-                        });
++                            });
++                        }
+                     }
++
++                    // rpm0618
++                    int post = provider.field_73244_f.size();
++                    System.out.println("Beacon thread exiting. Rehashed=" + rehashed + " pre=" + pre + " post=" + post + " num=" + BlockBeacon.GET_BLOCK_COUNT.get());
++                    // end rpm0618
++                // rpm0618
++                } catch(Throwable e) {
++                    System.out.println("Beacon thread exiting with exception: ");
++                    e.printStackTrace();
+                 }
++                // end rpm0618
+             }
+         });
+     }

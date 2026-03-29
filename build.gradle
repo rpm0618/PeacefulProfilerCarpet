@@ -469,5 +469,7 @@ task runServer {
 	group = 'tools ' + capitalizedName
 	description = 'runs the minecraft server'
 	dependsOn run
+
+	applicationDefaultJvmArgs = ["-Xss4m"]
 }
 
