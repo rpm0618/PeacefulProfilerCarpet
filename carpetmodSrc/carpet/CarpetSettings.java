@@ -540,8 +540,17 @@ public class CarpetSettings
         return true;
     }
 
-    @Rule(desc = "Sets the instant scheduling flag. The boolean used in world population that can be exploited turning true making all tile ticks update instantly.", category = CREATIVE)
+    @Rule(desc = "Sets the instant scheduling flag. The boolean used in world population that can be exploited turning true making all tile ticks update instantly.", category = CREATIVE, validator = "validateInstantScheduling")
     public static boolean instantScheduling = false;
+    private static boolean validateInstantScheduling(boolean instantScheduling) {
+        if (CarpetServer.minecraft_server != null && CarpetServer.minecraft_server.worlds != null) {
+            for (int dim = 0; dim < 3; dim++) {
+                WorldServer world = CarpetServer.minecraft_server.worlds[dim];
+                if (world != null) world.scheduledUpdatesAreImmediate = instantScheduling;
+            }
+        }
+        return true;
+    }
 
     @Rule(desc = "Observer delays depends on stained hardened clay aka terracotta on which they are placed", category = {EXPERIMENTAL, CREATIVE}, extra = {
             "1 to 15 gt per delay added (1-15 block data), 0 (white) adds 100gt per tick"

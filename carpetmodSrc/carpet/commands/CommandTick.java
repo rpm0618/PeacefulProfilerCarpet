@@ -157,6 +157,15 @@ public class CommandTick extends CommandCarpetBase
             CarpetProfiler.prepare_entity_report(step);
             return;
         }
+        else if ("show".equalsIgnoreCase(args[0]))
+        {
+            String message = "";
+            if (args.length > 1) {
+                message = args[1];
+            }
+            notifyCommandListener(sender, this, String.format("tick counter is %d %s", server.getTickCounter(), message));
+            return;
+        }
         throw new WrongUsageException(getUsage(sender), new Object[0]);
     }
 
@@ -168,7 +177,7 @@ public class CommandTick extends CommandCarpetBase
         }
         if (args.length == 1)
         {
-            return getListOfStringsMatchingLastWord(args, "rate","warp", "freeze", "step", "superHot", "health", "entities");
+            return getListOfStringsMatchingLastWord(args, "rate","warp", "freeze", "step", "superHot", "health", "entities", "show");
         }
         if (args.length == 2 && "superHot".equalsIgnoreCase(args[0]))
         {

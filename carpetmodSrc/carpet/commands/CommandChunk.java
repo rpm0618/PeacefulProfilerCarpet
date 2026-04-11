@@ -16,6 +16,7 @@ import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.ChunkProviderServer;
 import net.minecraft.world.gen.IChunkGenerator;
+import net.rpm0618.peaceful.CustomHashMap;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -153,7 +154,7 @@ public class CommandChunk extends CommandCarpetBase
 
         long i = ChunkPos.asLong(x, z);
         ChunkProviderServer provider = (ChunkProviderServer) world.getChunkProvider();
-        int mask = CommandLoadedChunks.getMask((Long2ObjectOpenHashMap<Chunk>) provider.loadedChunks);
+        int mask = CommandLoadedChunks.getMask((CustomHashMap<Chunk>) provider.loadedChunks);
         long key = HashCommon.mix(i) & mask;
         sender.sendMessage(new TextComponentString(("Chunk ideal key is " + key)));
         if (world.isSpawnChunk(x, z))

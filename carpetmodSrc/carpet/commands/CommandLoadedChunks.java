@@ -4,7 +4,6 @@ package carpet.commands;
 import carpet.CarpetSettings;
 import it.unimi.dsi.fastutil.HashCommon;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
@@ -19,11 +18,16 @@ import net.minecraft.world.gen.ChunkProviderServer;
 import javax.annotation.Nullable;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import net.rpm0618.peaceful.CustomHashMap;
 
 public class CommandLoadedChunks extends CommandCarpetBase
 {
@@ -55,6 +59,9 @@ public class CommandLoadedChunks extends CommandCarpetBase
             switch (args[0]){
                 case "size":
                     size(server, sender, args);
+                    break;
+                case "poke":
+                    poke(server, sender, args);
                     break;
                 case "search":
                     if (args.length != 3) throw new WrongUsageException(getUsage(sender));
@@ -103,7 +110,7 @@ public class CommandLoadedChunks extends CommandCarpetBase
 
     private Object getPrivateMethods(World world, String name){
         ChunkProviderServer provider = (ChunkProviderServer) world.getChunkProvider();
-        Long2ObjectOpenHashMap<Chunk> loadedChunks = (Long2ObjectOpenHashMap<Chunk>) provider.loadedChunks;
+        CustomHashMap<Chunk> loadedChunks = (CustomHashMap<Chunk>) provider.loadedChunks;
         try {
             Field f = loadedChunks.getClass().getDeclaredField(name);
             f.setAccessible(true);
@@ -114,20 +121,43 @@ public class CommandLoadedChunks extends CommandCarpetBase
         return null;
     }
 
-    protected Long2ObjectOpenHashMap<Chunk> getLoadedChunks (ICommandSender sender){
+    protected CustomHashMap<Chunk> getLoadedChunks (ICommandSender sender){
         world = sender.getEntityWorld();
         ChunkProviderServer provider = (ChunkProviderServer) world.getChunkProvider();
-        return (Long2ObjectOpenHashMap<Chunk>) provider.loadedChunks;
+        return (CustomHashMap<Chunk>) provider.loadedChunks;
     }
 
     protected void size(MinecraftServer server, ICommandSender sender, String[] args)
             throws CommandException, NoSuchFieldException, IllegalAccessException {
-        Long2ObjectOpenHashMap<Chunk> loadedChunks = this.getLoadedChunks(sender);
-        sender.sendMessage(new TextComponentString(String.format("Hashmap size is %d, %.2f", loadedChunks.size(), getFillLevel(loadedChunks))));
+        CustomHashMap<Chunk> loadedChunks = this.getLoadedChunks(sender);
+        sender.sendMessage(new TextComponentString(String.format("Hashmap size is %d, %.2f (%d|%d)", loadedChunks.size(), getFillLevel(loadedChunks), getMaxField(loadedChunks), getMask(loadedChunks))));
+    }
+
+    protected void poke(MinecraftServer server, ICommandSender sender, String[] args) throws IOException {
+        String defaultPath = "C:\\Ryan\\Personal\\minecraft\\PeacefulProfilerCarpet\\server\\cluster.csv";
+
+        if (args.length == 1) {
+            ArrayList<ChunkPos> chunks = loadCsv(defaultPath);
+            for (ChunkPos chunk : chunks) {
+                sender.getEntityWorld().getBlockState(new BlockPos(chunk.x << 4, 0, chunk.z << 4), "Poked by command");
+            }
+            sender.sendMessage(new TextComponentString("Poked " + chunks.size() + " chunks"));
+        }
+    }
+
+    private ArrayList<ChunkPos> loadCsv(String filePath) throws IOException {
+        ArrayList<ChunkPos> loadedChunks = new ArrayList<>();
+        try (Scanner scanner = new Scanner(Files.newInputStream(Paths.get(filePath)))) {
+            while (scanner.hasNextLine()) {
+                String[] split = scanner.nextLine().split(",");
+                loadedChunks.add(new ChunkPos(Integer.parseInt(split[0]), Integer.parseInt(split[1])));
+            }
+        }
+        return loadedChunks;
     }
 
     protected void inspect(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException, NoSuchFieldException, IllegalAccessException {
-        Long2ObjectOpenHashMap<Chunk> loadedChunks = this.getLoadedChunks(sender);
+        CustomHashMap<Chunk> loadedChunks = this.getLoadedChunks(sender);
         Object[] chunks = getValues(loadedChunks);
         int mask = getMask(loadedChunks);
         Integer start = 0, end = chunks.length;
@@ -189,7 +219,7 @@ public class CommandLoadedChunks extends CommandCarpetBase
     }
 
     protected void search(ICommandSender sender, int chunkX, int chunkZ) throws NoSuchFieldException, IllegalAccessException {
-        Long2ObjectOpenHashMap<Chunk> loadedChunks = (Long2ObjectOpenHashMap<Chunk>) ((ChunkProviderServer) world.getChunkProvider()).loadedChunks;
+        CustomHashMap<Chunk> loadedChunks = (CustomHashMap<Chunk>) ((ChunkProviderServer) world.getChunkProvider()).loadedChunks;
         Object[] chunks = getValues(loadedChunks);
         int mask = getMask(loadedChunks);
         for (int i = 0; i < chunks.length; i++) {
@@ -212,7 +242,7 @@ public class CommandLoadedChunks extends CommandCarpetBase
             return;
         }
         Chunk chunk = tempChunks.get(hash);
-        Long2ObjectOpenHashMap<Chunk> loadedChunks = getLoadedChunks();
+        CustomHashMap<Chunk> loadedChunks = getLoadedChunks();
         loadedChunks.put(hash, chunk);
         sender.sendMessage(new TextComponentString(String.format("Chunk (%d, %d) has been added back", x, z)));
     }
@@ -220,7 +250,7 @@ public class CommandLoadedChunks extends CommandCarpetBase
     protected void remove(ICommandSender sender, int x, int z) {
         long hash = ChunkPos.asLong(x, z);
 
-        Long2ObjectOpenHashMap<Chunk> loadedChunks = getLoadedChunks();
+        CustomHashMap<Chunk> loadedChunks = getLoadedChunks();
         if(!loadedChunks.containsKey(hash)){
             sender.sendMessage(new TextComponentString(String.format("Chunk (%d, %d) is not in loaded list", x, z)));
         }
@@ -229,9 +259,9 @@ public class CommandLoadedChunks extends CommandCarpetBase
         sender.sendMessage(new TextComponentString(String.format("Chunk (%d, %d) has been removed", x, z)));
     }
 
-    protected Long2ObjectOpenHashMap<Chunk> getLoadedChunks(){
+    protected CustomHashMap<Chunk> getLoadedChunks(){
         ChunkProviderServer provider = (ChunkProviderServer) world.getChunkProvider();
-        return (Long2ObjectOpenHashMap<Chunk>) provider.loadedChunks;
+        return (CustomHashMap<Chunk>) provider.loadedChunks;
     }
 
     public String formatChunk(Chunk chunk, int pos, int mask){
@@ -262,24 +292,24 @@ public class CommandLoadedChunks extends CommandCarpetBase
         return HashCommon.mix(ChunkPos.asLong(chunk.x, chunk.z)) & mask;
     }
 
-    public static int getMaxField(Long2ObjectOpenHashMap hashMap) throws NoSuchFieldException, IllegalAccessException {
-        Field maxFill = Long2ObjectOpenHashMap.class.getDeclaredField("maxFill");
+    public static int getMaxField(CustomHashMap hashMap) throws NoSuchFieldException, IllegalAccessException {
+        Field maxFill = CustomHashMap.class.getDeclaredField("maxFill");
         maxFill.setAccessible(true);
         return (int) maxFill.get(hashMap);
     }
 
-    public static int getMask(Long2ObjectOpenHashMap hashMap) throws NoSuchFieldException, IllegalAccessException {
-        Field mask = Long2ObjectOpenHashMap.class.getDeclaredField("mask");
+    public static int getMask(CustomHashMap hashMap) throws NoSuchFieldException, IllegalAccessException {
+        Field mask = CustomHashMap.class.getDeclaredField("mask");
         mask.setAccessible(true);
         return (int) mask.get(hashMap);
     }
 
-    public static float getFillLevel(Long2ObjectOpenHashMap hashMap) throws NoSuchFieldException, IllegalAccessException {
+    public static float getFillLevel(CustomHashMap hashMap) throws NoSuchFieldException, IllegalAccessException {
         return (float) hashMap.size() / getMaxField(hashMap);
     }
 
-    public static Object[] getValues(Long2ObjectOpenHashMap hashMap) throws NoSuchFieldException, IllegalAccessException {
-        Field value = Long2ObjectOpenHashMap.class.getDeclaredField("value");
+    public static Object[] getValues(CustomHashMap hashMap) throws NoSuchFieldException, IllegalAccessException {
+        Field value = CustomHashMap.class.getDeclaredField("value");
         value.setAccessible(true);
         return (Object[]) value.get(hashMap);
     }

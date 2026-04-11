@@ -4,6 +4,7 @@ import carpet.CarpetServer;
 import carpet.CarpetSettings;
 import narcolepticfrog.rsmm.MeterCommand;
 import net.minecraft.command.CommandHandler;
+import net.rpm0618.peaceful.CommandSetblockDelay;
 import redstone.multimeter.command.MeterGroupCommand;
 
 public class CarpetCommands {
@@ -46,6 +47,7 @@ public class CarpetCommands {
         handler.registerCommand(new CommandRNG());
         handler.registerCommand(new CommandScoreboardPublic());
         handler.registerCommand(new CommandSetBlock13());
+        handler.registerCommand(new CommandSetblockDelay());
         handler.registerCommand(new CommandSpawn());
         handler.registerCommand(new CommandStructure());
         handler.registerCommand(new CommandSubscribe());

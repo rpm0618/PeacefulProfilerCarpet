@@ -6,7 +6,14 @@
  package net.minecraft.world.chunk.storage;
  
  import com.google.common.collect.Maps;
-@@ -37,11 +39,12 @@
+@@ -31,17 +33,19 @@
+ import net.minecraft.world.chunk.NibbleArray;
+ import net.minecraft.world.storage.IThreadedFileIO;
+ import net.minecraft.world.storage.ThreadedFileIOBase;
++import net.rpm0618.peaceful.ProfileConfig;
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+ 
  public class AnvilChunkLoader implements IChunkLoader, IThreadedFileIO
  {
      private static final Logger field_151505_a = LogManager.getLogger();
@@ -23,7 +30,7 @@
  
      public AnvilChunkLoader(File p_i46673_1_, DataFixer p_i46673_2_)
      {
-@@ -50,10 +53,11 @@
+@@ -50,10 +54,11 @@
      }
  
      @Nullable
@@ -36,7 +43,7 @@
  
          if (nbttagcompound == null)
          {
-@@ -73,11 +77,12 @@
+@@ -73,11 +78,12 @@
      public boolean func_191063_a(int p_191063_1_, int p_191063_2_)
      {
          ChunkPos chunkpos = new ChunkPos(p_191063_1_, p_191063_2_);
@@ -50,7 +57,7 @@
      protected Chunk func_75822_a(World p_75822_1_, int p_75822_2_, int p_75822_3_, NBTTagCompound p_75822_4_)
      {
          if (!p_75822_4_.func_150297_b("Level", 10))
-@@ -120,13 +125,13 @@
+@@ -120,13 +126,13 @@
              NBTTagCompound nbttagcompound = new NBTTagCompound();
              NBTTagCompound nbttagcompound1 = new NBTTagCompound();
              nbttagcompound.func_74782_a("Level", nbttagcompound1);
@@ -66,7 +73,7 @@
          }
      }
  
-@@ -134,7 +139,7 @@
+@@ -134,7 +140,7 @@
      {
          if (!this.field_193415_c.contains(p_75824_1_))
          {
@@ -75,7 +82,7 @@
          }
  
          ThreadedFileIOBase.func_178779_a().func_75735_a(this);
-@@ -142,24 +147,33 @@
+@@ -142,24 +148,33 @@
  
      public boolean func_75814_c()
      {
@@ -114,7 +121,7 @@
  
                  if (nbttagcompound != null)
                  {
-@@ -169,7 +183,7 @@
+@@ -169,7 +184,7 @@
                      }
                      catch (Exception exception)
                      {
@@ -123,23 +130,23 @@
                      }
                  }
  
-@@ -178,6 +192,15 @@
+@@ -178,6 +193,15 @@
              finally
              {
                  this.field_193415_c.remove(chunkpos);
 +
 +                // rpm0618
-+                if (chunkpos.field_77276_a == 352 && chunkpos.field_77275_b == -370) {
++                if (chunkpos.field_77276_a == ProfileConfig.SAVE_STATE_1.field_77276_a && chunkpos.field_77275_b == ProfileConfig.SAVE_STATE_1.field_77275_b) {
 +                    System.out.println("Chunk Saving Done: " + chunkpos);
 +                }
-+                if (chunkpos.field_77276_a == 352 && chunkpos.field_77275_b == -369) {
++                if (chunkpos.field_77276_a == ProfileConfig.SAVE_STATE_2.field_77276_a && chunkpos.field_77275_b == ProfileConfig.SAVE_STATE_2.field_77275_b) {
 +                    System.out.println("Chunk Saving Done: " + chunkpos);
 +                }
 +                // end rpm0618
              }
  
              return lvt_3_1_;
-@@ -203,13 +226,13 @@
+@@ -203,13 +227,13 @@
      {
          try
          {
@@ -155,7 +162,7 @@
          }
      }
  
-@@ -249,7 +272,7 @@
+@@ -249,7 +273,7 @@
          });
      }
  

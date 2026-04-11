@@ -486,7 +486,7 @@ public class CustomHashMap<V> extends AbstractLong2ObjectMap<V> implements java.
                     }
                 }
 
-                if (k == ChunkPos.asLong(ProfileConfig.REHASH_CHUNK.x, ProfileConfig.REHASH_CHUNK.z)) {
+                if (k == ChunkPos.asLong(ProfileConfig.GLASS_CHUNK.x, ProfileConfig.GLASS_CHUNK.z)) {
                     System.out.println(Thread.currentThread().getName() + ": Didn't find Glass Chunk");
                 }
 
