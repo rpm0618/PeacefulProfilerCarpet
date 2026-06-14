@@ -4,6 +4,7 @@ import carpet.CarpetServer;
 import carpet.CarpetSettings;
 import narcolepticfrog.rsmm.MeterCommand;
 import net.minecraft.command.CommandHandler;
+import net.rpm0618.peaceful.CommandPeacefulConfig;
 import net.rpm0618.peaceful.CommandSetblockDelay;
 import redstone.multimeter.command.MeterGroupCommand;
 
@@ -66,5 +67,7 @@ public class CarpetCommands {
         // ----- RSMM End ----- //
 
         handler.registerCommand(new MeterGroupCommand(CarpetServer.rsmmServer));
+
+        handler.registerCommand(new CommandPeacefulConfig());
     }
 }

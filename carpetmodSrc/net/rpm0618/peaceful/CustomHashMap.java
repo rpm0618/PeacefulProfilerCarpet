@@ -480,8 +480,16 @@ public class CustomHashMap<V> extends AbstractLong2ObjectMap<V> implements java.
             } else if (k == curr) {
                 return (V)this.value[pos];
             } else {
+//                int initPos = pos;
+//                boolean found = false;
                 while((curr = key[pos = pos + 1 & this.mask]) != 0L) {
                     if (k == curr) {
+//                        if (!found && k == ChunkPos.asLong(ProfileConfig.GLASS_CHUNK.x, ProfileConfig.GLASS_CHUNK.z) && Math.abs(pos - initPos) > 1000) {
+//                            pos = (initPos) & this.mask;
+//                            found = true;
+////                            System.out.println("Extra Glass Chunk Clustering: " + ChunkPos.fromLong(k) + " pos=" + pos);
+//                            continue;
+//                        }
                         return (V)this.value[pos];
                     }
                 }
